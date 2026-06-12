@@ -68,7 +68,7 @@ ensure the smoothing parameters are appropriate for your site.
 ### Example: Final REM Output
 
 <!-- Add screenshot of the final REM map here -->
-![REM output](images/rem_output.png)
+![REM output](WaneckaREM_histogramBEFORE.png)
 
 ## Optional: Polygon Extraction & Histogram
 
