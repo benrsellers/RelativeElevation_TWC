@@ -1,4 +1,8 @@
 [README.md](https://github.com/user-attachments/files/28888845/README.md)
+
+![REM header](waneckagithubheader.png)
+
+
 # Relative Elevation Model (REM) Workflow
 
 This repository contains an R workflow for generating a Relative Elevation
