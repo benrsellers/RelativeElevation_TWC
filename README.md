@@ -63,7 +63,7 @@ ensure the smoothing parameters are appropriate for your site.
 ### Example: Longitudinal Profile QC
 
 <!-- Add screenshot of the thalweg profile plot here -->
-![Thalweg profile](images/thalweg_profile.png)
+![Thalweg profile](REM.png)
 
 ### Example: Final REM Output
 
