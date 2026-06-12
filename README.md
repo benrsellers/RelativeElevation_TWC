@@ -63,12 +63,12 @@ ensure the smoothing parameters are appropriate for your site.
 ### Example: Longitudinal Profile QC
 
 <!-- Add screenshot of the thalweg profile plot here -->
-![Thalweg profile](REM.png)
+![Thalweg profile](longitudinalprofile.png)
 
 ### Example: Final REM Output
 
 <!-- Add screenshot of the final REM map here -->
-![REM output](WaneckaREM_histogramBEFORE.png)
+![REM output](REM.png)
 
 ## Optional: Polygon Extraction & Histogram
 
@@ -77,6 +77,9 @@ user-provided polygon and plots a histogram of the value distribution,
 along with mean/median summary statistics. Useful for comparing relative
 elevation distributions across reaches, habitat patches, or geomorphic
 units.
+
+![REM histogram](WaneckaREM_histogramBEFORE.png)
+
 
 ## Notes
 
