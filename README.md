@@ -3,94 +3,90 @@
 ![REM header](waneckagithubheader.png)
 
 
-# Relative Elevation Model (REM) Workflow
+# Relative Elevation Model (REM) Generation
 
-This repository contains an R workflow for generating a Relative Elevation
-Model (REM) from a high-resolution drone-derived Digital Surface Model (DSM)
-and a channel centerline.
+An R script that generates a Relative Elevation Model (REM) from a digital elevation model (DEM) and a stream centerline, using the [`rrrem`](https://github.com/mikemahoney218/rrrem) package. The script also clips the REM to a buffer/polygon of interest and produces summary histograms of relative elevation values.
 
-## Overview
+## What is a REM?
 
-The REM represents the elevation of the land surface relative to the channel
-water surface / thalweg, making it easier to visualize floodplain
-topography, terraces, and channel geomorphology independent of overall
-valley slope.
+A Relative Elevation Model represents the vertical elevation difference between each raster cell and the nearest point along a stream centerline. REMs are widely used in fluvial geomorphology to visualize floodplain topography, delineate geomorphic surfaces (e.g., active channel, floodplain, terraces), and support river restoration and flood hazard analyses.
 
-**Method:** Centerline-based sampling → artifact filtering → rolling minimum
-→ spline smoothing → nearest-station reference surface → Gaussian smoothing
-→ raster subtraction.
+## Features
+
+- Reads a stream centerline shapefile and a DEM raster
+- Automatically reprojects the centerline to match the DEM's CRS if needed
+- Generates a REM using `rrrem::make_rem()`
+- Exports the REM as a GeoTIFF
+- Plots the REM with the centerline overlaid
+- Clips the REM to a buffer/polygon for focused analysis
+- Computes and visualizes histograms of relative elevation values (raw counts and percent of pixels)
+- Exports histogram data as CSV and the plot as a PNG
 
 ## Requirements
 
-- R (>= 4.0)
-- Packages: `terra`, `sf`, `zoo`
+- R (≥ 4.0 recommended)
+- Packages:
+  - [`rrrem`](https://github.com/mikemahoney218/rrrem) (installed from GitHub via `remotes`)
+  - `sf`
+  - `terra`
+  - `ggplot2`
+  - `remotes`
+
+Install dependencies:
 
 ```r
-install.packages(c("terra", "sf", "zoo"))
+install.packages(c("sf", "terra", "ggplot2", "remotes"))
+remotes::install_github("mikemahoney218/rrrem")
 ```
 
 ## Inputs
 
-- **DSM**: GeoTIFF, drone-derived (tested at 5cm resolution)
-- **Centerline**: Shapefile, single or multi-segment line representing the
-  channel thalweg/centerline
+| Input | Description |
+|---|---|
+| Stream centerline shapefile | Vector line representing the stream/channel centerline |
+| DEM raster (GeoTIFF) | Digital elevation model covering the study area |
+| Clip polygon shapefile | Polygon used to clip the REM for the histogram analysis |
 
-## Workflow Steps
+## Outputs
 
-1. Load DSM and centerline, align CRS, merge centerline to single line
-2. Sample DSM elevation densely along the centerline
-3. Filter elevation spikes (water surface artifacts, debris, boulders)
-4. Apply rolling minimum to pull profile to the true channel bed
-5. Smooth the longitudinal profile with a spline
-6. Build a reference surface by assigning each DSM cell the smoothed
-   elevation of its nearest centerline station
-7. Smooth the reference surface (Gaussian) to remove blocky propagation
-   artifacts
-8. Compute REM = DSM − reference surface
+| Output | Description |
+|---|---|
+| `*REM.tif` | REM raster (GeoTIFF), full extent |
+| REM plot | On-screen plot of the REM with centerline overlay |
+| `REM_histogram_percentages.csv` | Histogram bin data (counts and percentages) |
+| `REM_histogram_percentages.png` | Histogram plot of relative elevation distribution |
 
-## Key Parameters
+## Usage
 
-| Parameter | Description | Notes |
-|---|---|---|
-| `sample_spacing` | Distance between centerline sample points (m) | ~10x DSM resolution is a good start |
-| `vert_tolerance` | Max elevation deviation allowed from local median (m) | Tighten if spikes remain |
-| `roll_window_m` | Rolling minimum window length (m) | Should be ≥ widest channel section |
-| `spline_spar` | Spline smoothing factor (0–1) | Increase if profile is noisy |
-| `smooth_sigma` | Gaussian smoothing radius for reference surface (m) | Increase if sharp edges remain in REM |
-
-## Quality Control
-
-The script includes a diagnostic plot of the longitudinal thalweg profile
-(raw, rolling minimum, and smoothed) — review this before proceeding to
-ensure the smoothing parameters are appropriate for your site.
-
-### Example: Longitudinal Profile QC
-
-<!-- Add screenshot of the thalweg profile plot here -->
-![Thalweg profile](longitudinalprofile.png)
-
-### Example: Final REM Output
-
-<!-- Add screenshot of the final REM map here -->
-![REM output](REM.png)
-
-## Optional: Polygon Extraction & Histogram
-
-A separate chunk at the end of the script extracts REM values within a
-user-provided polygon and plots a histogram of the value distribution,
-along with mean/median summary statistics. Useful for comparing relative
-elevation distributions across reaches, habitat patches, or geomorphic
-units.
-
-![REM histogram](WaneckaREM_histogramBEFORE.png)
-
+1. Open the script in R or RStudio.
+2. Update the file paths in the **Define input and output file paths** section:
+   ```r
+   centerline_path     <- "path/to/centerline.shp"
+   dem_path             <- "path/to/dem.tif"
+   output_rem_path      <- "path/to/output_REM.tif"
+   output_plots_path    <- "path/to/plots_folder"
+   clip_path            <- "path/to/clip_polygon.shp"
+   ```
+3. Adjust parameters as needed:
+   - `point_number` — number of points sampled along the centerline (default: 500)
+   - `buffer_distance` — buffer distance around the centerline, in DEM CRS units (default: 10)
+   - Histogram value range and bin count (`breaks`, value filtering bounds)
+4. Run the script. It will:
+   - Generate and save the REM raster
+   - Display REM plots
+   - Clip the REM to the buffer/polygon
+   - Generate and save histogram outputs
 
 ## Notes
 
-- Designed for high-resolution (≤10cm) drone DSMs with variable channel
-  width
-- Avoids IDW interpolation, which performs poorly on sinuous channels and
-  very large rasters
-- The nearest-station + Gaussian smoothing approach respects channel
-  sinuosity while avoiding sharp Voronoi-style boundaries in the reference
-  surface
+- The centerline and DEM must share the same coordinate reference system (CRS); the script handles reprojection automatically if they differ.
+- Buffer and point-sampling distances are in the units of the DEM's CRS (e.g., meters for UTM, feet for State Plane in feet).
+- The plotting color range (`range = c(-2, 5)`) should be adjusted to match the relief of your study site.
+
+## Author
+
+Ben Sellers
+
+## License
+
+Add a license of your choice (e.g., MIT) before publishing.
